@@ -1,0 +1,10 @@
+fun:fread=uninstrumented
+fun:fread=discard
+
+fun:printf=uninstrumented
+fun:printf=discard
+
+fun:read=uninstrumented
+fun:read=discard
+
+fun:mmap=custom
