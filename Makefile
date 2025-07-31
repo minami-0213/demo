@@ -9,6 +9,6 @@ test: main.c
 	$(CC) $^ -O0 -emit-llvm -S -o main.ll
 
 clean:
-	rm main *.ll
+	rm -f main *.ll
 
 .PHONY: clean test all

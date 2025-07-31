@@ -13,6 +13,6 @@ debug: test-clang.c
 	$(CC) $^ -DDEBUG_CLANG -o my-clang++
 
 clean:
-	rm my-clang my-clang++
+	rm -f my-clang my-clang++
 
 .PHONY: clean
