@@ -1,0 +1,7 @@
+*.so
+*.o
+*.ll
+test/
+main
+my-clang
+my-clang++

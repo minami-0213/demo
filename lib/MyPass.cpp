@@ -55,7 +55,7 @@ struct MyTaintPass : public ModulePass
         bool Modified = false;
 
         // 指定要分析的函数
-        std::set<std::string> Targets = {"mytest"};
+        std::set<std::string> Targets = {"mytest16", "mytest32"};
 
         for (Function &F : M)
         {
@@ -72,9 +72,31 @@ struct MyTaintPass : public ModulePass
                     // outs() << "\n";
 
                     IRBuilder<> IRB(&*TargetFunc->getEntryBlock().getFirstInsertionPt());
+                    // 分析整型参数
                     if (Arg.getType()->isIntegerTy())
                     {
                         callLogFunction(IRB, &Arg, LogFunc_i8, LogFunc_i16, LogFunc_i32, LogFunc_i64);
+                    }
+                    // 分析指针参数
+                    else if (Arg.getType()->isPointerTy())
+                    {
+                        Type *ElemTy = Arg.getType()->getPointerElementType();
+
+                        // Case 1: 普通整型指针（如 int*）
+                        if (ElemTy->isIntegerTy())
+                        {
+                            unsigned BitWidth = ElemTy->getIntegerBitWidth();
+                            std::string LogPtrFuncName = "__my_log_" + std::to_string(BitWidth) + "ptr";
+                            FunctionCallee LogPtrFunc = M.getOrInsertFunction(
+                                LogPtrFuncName, FunctionType::get(Type::getVoidTy(Ctx), {Arg.getType()}, false));
+                            IRB.CreateCall(LogPtrFunc, {&Arg});
+                        }
+
+                        // Case 2: 指向结构体类型
+                        else if (StructType *ST = dyn_cast<StructType>(ElemTy))
+                        {
+                            // TODO
+                        }
                     }
                 }
             }
