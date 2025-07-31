@@ -11,7 +11,7 @@ void print_label_tree(dfsan_label l)
 
     // 打印当前标签（只打印叶子节点）
     if (info->l1 == 0 && info->l2 == 0)
-        printf("byte: %d\n", l - 1);
+        printf("byte: %s\n", info->desc);
 
     // 递归打印左右子标签
     print_label_tree(info->l1);

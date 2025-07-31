@@ -13,12 +13,15 @@ static void assign_taint_labels(void *buf, long offset, size_t size)
 {
     for (size_t i = 0; i < size; i += granularity)
     {
-        char num[MAX];
-        snprintf(num, MAX, "%lu", offset + i + 1);
-        printf("label: %s done\n", num);
-        dfsan_label L = dfsan_create_label(num, NULL);
+        char off[MAX];
+        snprintf(off, MAX, "%02lx", offset + i);
+        // strdup 会为你分配一份拷贝，直到程序退出都安全
+        char *desc_copy = strdup(off);
+        // description 用来表示标记的字节比较好
+        dfsan_label L = dfsan_create_label(desc_copy, NULL);
         dfsan_set_label(L, (char *)(buf) + i, granularity);
     }
+    printf("%lu labels assigned!\n", size);
 }
 
 static void assign_taint_labels_exf(void *buf, long offset, size_t ret, size_t count, size_t size)

@@ -55,7 +55,7 @@ struct MyTaintPass : public ModulePass
         bool Modified = false;
 
         // 指定要分析的函数
-        std::set<std::string> Targets = {"TIFFFdOpenExt", "mytest"};
+        std::set<std::string> Targets = {"mytest"};
 
         for (Function &F : M)
         {
