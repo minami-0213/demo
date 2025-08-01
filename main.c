@@ -10,10 +10,12 @@ struct test_format
     __uint16_t magic_num;
     __uint16_t version;
     __uint32_t dir_off;
-    __uint8_t data[1024];
+    __uint8_t data[8];
 };
 
 typedef struct test_format tiff;
+
+tiff yntest;
 
 void print_label_tree(dfsan_label l)
 {
@@ -33,7 +35,7 @@ void print_label_tree(dfsan_label l)
 void mytest16(__uint16_t *x)
 {
     __u_char *ptr = (__u_char *)x;
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < sizeof(__uint16_t); i++)
     {
         printf("%02x ", *(ptr + i));
     }
@@ -43,9 +45,28 @@ void mytest16(__uint16_t *x)
 void mytest32(__uint32_t *x)
 {
     __u_char *ptr = (__u_char *)x;
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < sizeof(__uint32_t); i++)
     {
         printf("%02x ", *(ptr + i));
+    }
+    printf("\n");
+}
+
+void mytest_struct(tiff *x)
+{
+    __u_char *ptr = (__u_char *)x;
+    for (int i = 0; i < sizeof(tiff); i++)
+    {
+        printf("%02x ", *(ptr + i));
+    }
+    printf("\n");
+}
+
+void mytest_array(__uint8_t x[])
+{
+    for (int i = 0; i < sizeof(tiff); i++)
+    {
+        printf("%d ", x[i]);
     }
     printf("\n");
 }
@@ -56,7 +77,7 @@ int main()
 
     int fd = open("./data/not_kitty.tiff", O_RDONLY);
     lseek(fd, 0, SEEK_CUR);
-    ssize_t ret = read(fd, &tiff_test->magic_num, 8);
+    ssize_t ret = read(fd, &tiff_test->magic_num, 16);
     close(fd);
 
     printf("%d\n", tiff_test->magic_num);
@@ -65,6 +86,7 @@ int main()
 
     mytest16((__uint16_t *)&tiff_test->magic_num);
     mytest32((__uint32_t *)&tiff_test->dir_off);
-
+    mytest_struct(tiff_test);
+    mytest_array((__uint8_t *)&tiff_test);
     return 0;
 }

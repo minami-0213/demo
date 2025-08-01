@@ -52,10 +52,15 @@ struct MyTaintPass : public ModulePass
         FunctionType *UnmapTy = FunctionType::get(Type::getInt32Ty(Ctx), {Type::getInt8PtrTy(Ctx), sizeTTy}, false);
         FunctionCallee MyUnmap = M.getOrInsertFunction("__my_munmap", MmapTy);
 
+        // 分析函数参数（指针）所用的函数
+        std::string LogPtrFuncName = "__my_log_ptr";
+        FunctionCallee LogPtrFunc = M.getOrInsertFunction(
+            LogPtrFuncName, FunctionType::get(Type::getVoidTy(Ctx), {Type::getInt8PtrTy(Ctx), sizeTTy}, false));
+
         bool Modified = false;
 
         // 指定要分析的函数
-        std::set<std::string> Targets = {"mytest16", "mytest32"};
+        std::set<std::string> Targets = {"mytest16", "mytest32", "mytest_struct", "mytest_array"};
 
         for (Function &F : M)
         {
@@ -86,17 +91,34 @@ struct MyTaintPass : public ModulePass
                         if (ElemTy->isIntegerTy())
                         {
                             unsigned BitWidth = ElemTy->getIntegerBitWidth();
-                            std::string LogPtrFuncName = "__my_log_" + std::to_string(BitWidth) + "ptr";
-                            FunctionCallee LogPtrFunc = M.getOrInsertFunction(
-                                LogPtrFuncName, FunctionType::get(Type::getVoidTy(Ctx), {Arg.getType()}, false));
-                            IRB.CreateCall(LogPtrFunc, {&Arg});
+                            unsigned SizeInBytes = BitWidth / 8;
+                            Value *SizeVal = ConstantInt::get(Type::getInt64Ty(Ctx), SizeInBytes);
+                            // std::string LogPtrFuncName = "__my_log_" + std::to_string(BitWidth) + "ptr";
+                            // FunctionCallee LogPtrFunc = M.getOrInsertFunction(
+                            //     LogPtrFuncName, FunctionType::get(Type::getVoidTy(Ctx), {Arg.getType()}, false));
+                            IRB.CreateCall(LogPtrFunc, {&Arg, SizeVal});
                         }
 
                         // Case 2: 指向结构体类型
                         else if (StructType *ST = dyn_cast<StructType>(ElemTy))
                         {
-                            // TODO
+                            uint64_t StructSize = DL.getTypeAllocSize(ElemTy);
+                            Value *SizeVal = ConstantInt::get(Type::getInt64Ty(Ctx), StructSize);
+                            IRB.CreateCall(LogPtrFunc, {&Arg, SizeVal});
                         }
+
+                        // Case 3: i8**, 函数指针（应该也不会是污点）等其他类型更加复杂了
+                        // TODO
+                    }
+                    // 分析结构体参数（还有数组，感觉也是非常复杂而且用的不多）
+                    else if (Arg.getType()->isStructTy())
+                    {
+                        // TODO
+                    }
+                    else
+                    {
+                        // 暂时不支持的数据类型
+                        errs() << "Invalid args type!\n";
                     }
                 }
             }
@@ -214,7 +236,6 @@ struct MyTaintPass : public ModulePass
     void callLogFunction(IRBuilder<> &IRB, Value *V, FunctionCallee Log_i8, FunctionCallee Log_i16,
                          FunctionCallee Log_i32, FunctionCallee Log_i64)
     {
-
         // debug
         // outs() << "Value: " << *V << "\n";
 
@@ -248,7 +269,7 @@ struct MyTaintPass : public ModulePass
             break;
         default:
             // 对于非常见类型，直接报错
-            errs() << "Invalid type!\n";
+            errs() << "Invalid integer type!\n";
             break;
         }
     }

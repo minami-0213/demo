@@ -71,55 +71,20 @@ void __my_log_64(uint64_t var)
     }
 }
 
-// i8*
-void __my_log_8ptr(uint8_t *var)
+// 通用的
+void __my_log_ptr(void *var, size_t size)
 {
-    dfsan_label l = dfsan_read_label(var, sizeof(uint8_t));
+    dfsan_label l = dfsan_read_label(var, size);
     if (l)
     {
-        printf("[my-taint-log] type=i8, bytes=[0x%02x], label=%d\n", *var, l);
-        print_label_tree(l);
-    }
-}
+        char bytes[1024];
+        memcpy(bytes, var, size);
+        printf("[my-taint-log] type=i8*, bytes=[");
+        for (size_t i = 0; i < size - 1; i++)
+            printf("0x%02x, ", bytes[i]);
+        printf("0x%02x", bytes[size - 1]);
+        printf("], label=%d\n", l);
 
-// i16*
-void __my_log_16ptr(uint16_t *var)
-{
-    dfsan_label l = dfsan_read_label(var, sizeof(uint16_t));
-    if (l)
-    {
-        uint8_t bytes[2];
-        memcpy(bytes, var, 2);
-        printf("[my-taint-log] type=i16, bytes=[0x%02x, 0x%02x], label=%d\n", bytes[0], bytes[1], l);
-        print_label_tree(l);
-    }
-}
-
-// i32*
-void __my_log_32ptr(uint32_t *var)
-{
-    dfsan_label l = dfsan_read_label(var, sizeof(uint32_t));
-    if (l)
-    {
-        uint8_t bytes[4];
-        memcpy(bytes, var, 4);
-        printf("[my-taint-log] type=i32, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n", bytes[0], bytes[1],
-               bytes[2], bytes[3], l);
-        print_label_tree(l);
-    }
-}
-
-// i64*
-void __my_log_64ptr(uint64_t *var)
-{
-    dfsan_label l = dfsan_read_label(var, sizeof(uint64_t));
-    if (l)
-    {
-        uint8_t bytes[8];
-        memcpy(bytes, var, 8);
-        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x], "
-               "label=%d\n",
-               bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], l);
         print_label_tree(l);
     }
 }
