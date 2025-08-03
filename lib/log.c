@@ -139,7 +139,7 @@ void __my_log_icmp_i32(uint32_t x, uint32_t y)
     {
         memcpy(bytes, &x, 4);
         memcpy(cmpbytes, &y, 4);
-        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+        printf("[my-taint-log] type=i32, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
                "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
                bytes[0], bytes[1], bytes[2], bytes[3], cmpbytes[0], cmpbytes[1], cmpbytes[2], cmpbytes[3], l1);
         print_label_tree(l1);
@@ -150,7 +150,7 @@ void __my_log_icmp_i32(uint32_t x, uint32_t y)
     {
         memcpy(bytes, &y, 4);
         memcpy(cmpbytes, &x, 4);
-        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+        printf("[my-taint-log] type=i32, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
                "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
                bytes[0], bytes[1], bytes[2], bytes[3], cmpbytes[0], cmpbytes[1], cmpbytes[2], cmpbytes[3], l2);
         print_label_tree(l2);
