@@ -128,23 +128,39 @@ struct MyTaintPass : public ModulePass
                 for (auto I = BB.begin(), E = BB.end(); I != E;)
                 {
                     Instruction &Inst = *I++;
-
                     // 处理 icmp 指令
                     if (auto *Cmp = dyn_cast<ICmpInst>(&Inst))
                     {
                         Value *Op1 = Cmp->getOperand(0);
                         Value *Op2 = Cmp->getOperand(1);
+
+                        Type *Ty = Op1->getType();
+                        if (!Ty->isIntegerTy())
+                            continue;
                         IRBuilder<> IRB(Cmp);
 
                         // debug
                         // outs() << *Cmp << "\n";
 
-                        // 根据操作数类型选择正确的日志函数
-                        if (Op1->getType()->isIntegerTy())
-                            callLogFunction(IRB, Op1, LogFunc_i8, LogFunc_i16, LogFunc_i32, LogFunc_i64);
-                        if (Op2->getType()->isIntegerTy())
-                            callLogFunction(IRB, Op2, LogFunc_i8, LogFunc_i16, LogFunc_i32, LogFunc_i64);
+                        Value *OriginalV = Op1;
+                        // 如果是符号扩展或零扩展，获取原始操作数
+                        if (auto *SExt = dyn_cast<SExtInst>(OriginalV))
+                        {
+                            OriginalV = SExt->getOperand(0);
+                        }
+                        else if (auto *ZExt = dyn_cast<ZExtInst>(OriginalV))
+                        {
+                            OriginalV = ZExt->getOperand(0);
+                        }
+                        Type *OrigTy = OriginalV->getType();
+                        unsigned BitWidth = OrigTy->getIntegerBitWidth();
 
+                        std::string FuncName = "__my_log_icmp_i" + std::to_string(BitWidth);
+
+                        FunctionType *LogFuncTy = FunctionType::get(Type::getVoidTy(Ctx), {Ty, Ty}, false);
+                        FunctionCallee LogFunc = M.getOrInsertFunction(FuncName, LogFuncTy);
+
+                        IRB.CreateCall(LogFunc, {Op1, Op2});
                         Modified = true;
                     }
 

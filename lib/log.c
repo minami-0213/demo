@@ -88,3 +88,100 @@ void __my_log_ptr(void *var, size_t size)
         print_label_tree(l);
     }
 }
+
+// 分析比较指令的参考值
+void __my_log_icmp_i8(uint8_t x, uint8_t y)
+{
+    dfsan_label l1 = dfsan_get_label(x);
+    if (l1)
+    {
+        printf("[my-taint-log] type=i8, bytes=[0x%02x], cmpbytes[0x%02x], label=%d\n", x, y, l1);
+        print_label_tree(l1);
+    }
+    dfsan_label l2 = dfsan_get_label(y);
+    if (l2)
+    {
+        printf("[my-taint-log] type=i8, bytes=[0x%02x], cmpbytes[0x%02x], label=%d\n", y, x, l2);
+        print_label_tree(l2);
+    }
+}
+
+void __my_log_icmp_i16(uint16_t x, uint16_t y)
+{
+    uint8_t bytes[2];
+    uint8_t cmpbytes[2];
+    dfsan_label l1 = dfsan_get_label(x);
+    if (l1)
+    {
+        memcpy(bytes, &x, 2);
+        memcpy(cmpbytes, &y, 2);
+        printf("[my-taint-log] type=i16, bytes=[0x%02x, 0x%02x], cmpbytes=[0x%02x, 0x%02x], label=%d\n", bytes[0],
+               bytes[1], cmpbytes[0], cmpbytes[1], l1);
+        print_label_tree(l1);
+    }
+    dfsan_label l2 = dfsan_get_label(y);
+    if (l2)
+    {
+        memcpy(bytes, &y, 2);
+        memcpy(cmpbytes, &x, 2);
+        printf("[my-taint-log] type=i16, bytes=[0x%02x, 0x%02x], cmpbytes=[0x%02x, 0x%02x], label=%d\n", bytes[0],
+               bytes[1], cmpbytes[0], cmpbytes[1], l2);
+        print_label_tree(l2);
+    }
+}
+
+void __my_log_icmp_i32(uint32_t x, uint32_t y)
+{
+    uint8_t bytes[4];
+    uint8_t cmpbytes[4];
+    dfsan_label l1 = dfsan_get_label(x);
+    if (l1)
+    {
+        memcpy(bytes, &x, 4);
+        memcpy(cmpbytes, &y, 4);
+        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+               "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
+               bytes[0], bytes[1], bytes[2], bytes[3], cmpbytes[0], cmpbytes[1], cmpbytes[2], cmpbytes[3], l1);
+        print_label_tree(l1);
+    }
+
+    dfsan_label l2 = dfsan_get_label(y);
+    if (l2)
+    {
+        memcpy(bytes, &y, 4);
+        memcpy(cmpbytes, &x, 4);
+        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+               "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
+               bytes[0], bytes[1], bytes[2], bytes[3], cmpbytes[0], cmpbytes[1], cmpbytes[2], cmpbytes[3], l2);
+        print_label_tree(l2);
+    }
+}
+
+void __my_log_icmp_i64(uint64_t x, uint64_t y)
+{
+    uint8_t bytes[8];
+    uint8_t cmpbytes[8];
+    dfsan_label l1 = dfsan_get_label(x);
+    if (l1)
+    {
+        memcpy(bytes, &x, 8);
+        memcpy(cmpbytes, &y, 8);
+        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+               "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
+               bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], cmpbytes[0], cmpbytes[1],
+               cmpbytes[2], cmpbytes[3], cmpbytes[4], cmpbytes[5], cmpbytes[6], cmpbytes[7], l1);
+        print_label_tree(l1);
+    }
+
+    dfsan_label l2 = dfsan_get_label(y);
+    if (l2)
+    {
+        memcpy(bytes, &y, 8);
+        memcpy(cmpbytes, &x, 8);
+        printf("[my-taint-log] type=i64, bytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x], "
+               "cmpbytes=[0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x], label=%d\n",
+               bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], cmpbytes[0], cmpbytes[1],
+               cmpbytes[2], cmpbytes[3], cmpbytes[4], cmpbytes[5], cmpbytes[6], cmpbytes[7], l1);
+        print_label_tree(l2);
+    }
+}
